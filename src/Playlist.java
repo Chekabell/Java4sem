@@ -18,7 +18,6 @@ public class Playlist {
 	void start(){
 		trackNow = tracks.getFirst();
 	}
-	int getSize(){ return tracks.size(); }
 	String getName() {
 		return name;
 	}

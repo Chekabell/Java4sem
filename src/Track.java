@@ -1,6 +1,6 @@
 
 public class Track {
-	private static String name;
+	private final String name;
 
 	public Track(String n) {
 		name = n;

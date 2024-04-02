@@ -1,4 +1,12 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 public class MP3Player {
@@ -6,7 +14,7 @@ public class MP3Player {
     static Playlist playlistNow = null;
     static String buf;
     static int key;
-    static boolean repit = false;
+    static boolean repeat = false;
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
@@ -14,8 +22,8 @@ public class MP3Player {
             System.out.println("\n");
             if (playlistNow != null) {
                 System.out.print("Вы сейчас в: " + playlistNow.getName() + "\n");
-                if (repit) {
-                    System.out.println("Трек сейчас на репите\n");
+                if (repeat) {
+                    System.out.print("Трек сейчас на репите\n");
                 }
                 if (playlistNow.getTrackNow() != null) {
                     System.out.print("Играет трек - " + playlistNow.getTrackNow().getName() + "\n");
@@ -23,18 +31,19 @@ public class MP3Player {
             }
             System.out.print(
                     """
-                            1 - Включить плейлист
-                            2 - Следующий трек
-                            3 - Предыдущий трек
-                            4 - Поставить\\убрать репит трека
-                            5 - Создать плейлист
-                            6 - Удалить плейлист
-                            7 - Добавить песню в плейлист
-                            8 - Удалить песню из плейлиста
-                            9 - Показать все треки в плейлисте
-                            10 - Показать все плейлисты
-                            11 - Загрузить плейлист
-                            12 - Сохранить плейлист
+                            1 - Выбрать плейлист
+                            2 - Включить плейлист
+                            3 - Следующий трек
+                            4 - Предыдущий трек
+                            5 - Поставить\\убрать репит трека
+                            6 - Создать плейлист
+                            7 - Удалить плейлист
+                            8 - Добавить трек в плейлист
+                            9 - Удалить трек из плейлиста
+                            10 - Показать все треки в плейлисте
+                            11 - Показать все плейлисты
+                            12 - Загрузить плейлист
+                            13 - Сохранить плейлист
                             0 - Выход
                             """);
             System.out.print("Выберите вариант: ");
@@ -47,7 +56,7 @@ public class MP3Player {
                         buf = in.nextLine();
                         try {
                             if (buf.matches("[-+]?\\d+")) {
-                                playlistNow = playlists.get(Integer.parseInt(buf));
+                                playlistNow = playlists.get(Integer.parseInt(buf)-1);
                             } else {
                                 playlistNow = playlists.get(searchPlaylistName(buf));
                             }
@@ -59,7 +68,14 @@ public class MP3Player {
                     }
                     break;
                 case (2):
-                    if (repit) {
+                    if(playlistNow != null) {
+                        playlistNow.start();
+                    } else {
+                        System.out.println("Сначала выберите плейлист!\n");
+                    }
+                    break;
+                case (3):
+                    if (repeat) {
                         System.out.print("Сначала снимите трек с повтора\n");
                     } else {
                         try {
@@ -69,8 +85,8 @@ public class MP3Player {
                         }
                     }
                     break;
-                case (3):
-                    if (repit) {
+                case (4):
+                    if (repeat) {
                         System.out.println("Сначала снимите трек с повтора\n");
                     } else {
                         try {
@@ -80,20 +96,20 @@ public class MP3Player {
                         }
                     }
                     break;
-                case (4):
-                    repit = !repit;
-                    break;
                 case (5):
+                    repeat = !repeat;
+                    break;
+                case (6):
                     System.out.print("Введите имя плейлиста: ");
                     buf = in.nextLine();
                     playlistNow = createPlaylist(buf);
                     break;
-                case (6):
+                case (7):
                     System.out.print("Введите имя или номер плейлиста: ");
                     buf = in.nextLine();
                     try {
                         if (buf.matches("[-+]?\\d+")) {
-                            deletePlaylist(Integer.parseInt(buf));
+                            deletePlaylist(Integer.parseInt(buf)-1);
                         } else {
                             deletePlaylist(searchPlaylistName(buf));
                         }
@@ -101,17 +117,21 @@ public class MP3Player {
                         System.out.println("\nИзвините, но такого плейлиста ещё не существует\n");
                     }
                     break;
-                case (7):
-                    System.out.print("Введите имя трека: ");
-                    buf = in.nextLine();
-                    playlistNow.addTrack(buf);
-                    break;
                 case (8):
+                    if(playlistNow != null) {
+                        System.out.print("Введите имя трека: ");
+                        buf = in.nextLine();
+                        playlistNow.addTrack(buf);
+                    } else {
+                        System.out.println("Вы не находитесь в плейлисте сейчас. Создайте его или загрузите!\n");
+                    }
+                    break;
+                case (9):
                     System.out.print("Введите имя или номер трека: ");
                     buf = in.nextLine();
                     try {
                         if (buf.matches("[-+]?\\d+")) {
-                            playlistNow.deleteTrack(Integer.parseInt(buf));
+                            playlistNow.deleteTrack(Integer.parseInt(buf)-1);
                         } else {
                             playlistNow.deleteTrack(playlistNow.searchTrackName(buf));
                         }
@@ -119,15 +139,27 @@ public class MP3Player {
                         System.out.println("\nИзвините, но такого трека в этом плейлисте уже не существует\n");
                     }
                     break;
-                case (9):
+                case (10):
                     playlistNow.showAllTracks();
                     break;
-                case (10):
+                case (11):
                     showAllPlaylists();
                     break;
-                case (11):
-                    break;
                 case (12):
+                    System.out.print("Введите имя плейлиста: ");
+                    buf = in.nextLine();
+                    try {
+                        loadPlaylist(buf);
+                    } catch (RuntimeException e){
+                        System.out.println(e.getMessage()+"\n");
+                    }
+                    break;
+                case (13):
+                    try {
+                        savePlaylist();
+                    } catch (RuntimeException e){
+                        System.out.println(e.getMessage()+"\n");
+                    }
                     break;
                 case (0):
                     System.exit(0);
@@ -157,6 +189,9 @@ public class MP3Player {
             Playlist playlistToDelete = playlists.get(i);
             playlistToDelete.clear();
             playlists.remove(playlistToDelete);
+            if(playlistNow == playlistToDelete){
+                playlistNow = null;
+            }
         } catch (IndexOutOfBoundsException e) {
             throw new IndexOutOfBoundsException();
         }
@@ -165,11 +200,85 @@ public class MP3Player {
     static void showAllPlaylists() {
         if (!playlists.isEmpty()) {
             System.out.println("Список плейлистов: \n");
-            for (int i = 0; i < playlists.size(); i++) {
-                System.out.println(i + " : " + playlists.get(i).getName());
+            for (int i = 1; i < playlists.size(); i++) {
+                System.out.println(i + " : " + playlists.get(i-1).getName());
             }
         } else {
             System.out.println("Ни одного плейлиста ещё нет. Создайте хотя бы один!\n");
+        }
+    }
+
+    static void loadPlaylist(String s) throws RuntimeException{
+        String name = s + ".txt";
+        Path filePath = Path.of("C:\\Users\\User\\IdeaProjects\\Java4sem\\Playlists",name);
+        Playlist pl = new Playlist(s);
+        LinkedList<Track> arr = new LinkedList<>();
+        BufferedReader rd;
+        int len;
+        try {
+            rd = Files.newBufferedReader(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось открыть буфер чтения.");
+        }
+        try{
+            len = Integer.parseInt(rd.readLine());
+        } catch (IOException e){
+            throw new RuntimeException("Не удалось считать размер плейлиста.");
+        }
+        for (int i = 0; i < len; i++) {
+            try {
+                arr.add(new Track(rd.readLine()));
+            } catch (IOException e) {
+                throw new RuntimeException("Не удалось считать название трека.");
+            }
+        }
+        try {
+            rd.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось закрыть буфер чтения.");
+        }
+        pl.setListTrack(arr);
+        playlists.add(pl);
+    }
+
+    static void savePlaylist() throws RuntimeException{
+        Path dirPath =  Path.of("C:\\Users\\User\\IdeaProjects\\Java4sem\\Playlists");
+        String name = playlistNow.getName()+".txt";
+        Path filePath = Path.of("C:\\Users\\User\\IdeaProjects\\Java4sem\\Playlists",name);
+        if (Files.notExists(dirPath)){
+            try {
+                Files.createDirectory(dirPath);
+            } catch (IOException e) {
+                throw new RuntimeException("Не удалось создать директорию по указанному пути.");
+            }
+        }
+
+        LinkedList<Track> arr = playlistNow.getListTrack();
+        BufferedWriter wr;
+        try {
+            wr = Files.newBufferedWriter(filePath, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось открыть буфер записи.");
+        }
+        try{
+            wr.write(String.valueOf(arr.size()),0,String.valueOf(arr.size()).length());
+            wr.newLine();
+        } catch(IOException e){
+            throw new RuntimeException("Не удалось записать количество треков в плейлисте");
+        }
+
+        for (Track track : arr) {
+            try {
+                wr.write(track.getName(), 0, track.getName().length());
+                wr.newLine();
+            } catch (IOException e) {
+                throw new RuntimeException("Не удалось записать название трека.");
+            }
+        }
+        try {
+            wr.close();
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось закрыть буфер записи.");
         }
     }
 }

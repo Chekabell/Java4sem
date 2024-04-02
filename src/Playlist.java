@@ -2,7 +2,7 @@ import java.util.LinkedList;
 
 public class Playlist {
 	private static LinkedList<Track> tracks;
-	private static String name;
+	private final String name;
 	private static Track trackNow;
 
 	public Playlist(String n) {
@@ -10,23 +10,34 @@ public class Playlist {
 		name = n;
 		trackNow = null;
 	}
-
+	LinkedList<Track> getListTrack(){ return tracks;}
+	void setListTrack(LinkedList<Track> tr){tracks = tr; }
 	Track getTrackNow() {
 		return trackNow;
 	}
-
+	void start(){
+		trackNow = tracks.getFirst();
+	}
+	int getSize(){ return tracks.size(); }
 	String getName() {
 		return name;
 	}
 
 	void addTrack(String name) {
-		tracks.add(new Track(name));
+		Track t = new Track(name);
+		tracks.add(t);
 	}
-
 	void deleteTrack(int i) throws IndexOutOfBoundsException {
 		try {
 			Track trackToDelete = tracks.get(i);
 			tracks.remove(trackToDelete);
+			if (trackNow == trackToDelete){
+				try{
+					next();
+				} catch (IndexOutOfBoundsException e){
+					trackNow = null;
+				}
+			}
 		} catch (IndexOutOfBoundsException e) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -65,8 +76,8 @@ public class Playlist {
 	void showAllTracks() {
 		if (!tracks.isEmpty()) {
 			System.out.println("Список песен в плейлисте " + name + ": \n");
-			for (int i = 0; i < tracks.size(); i++) {
-				System.out.println(i + ":" + tracks.get(i).getName());
+			for (int i = 1; i <= tracks.size(); i++) {
+				System.out.println(i + " : " + tracks.get(i-1).getName());
 			}
 		} else {
 			System.out.println("Плейлист пуст\n");

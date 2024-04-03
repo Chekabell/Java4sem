@@ -140,7 +140,11 @@ public class MP3Player {
                     }
                     break;
                 case (10):
-                    playlistNow.showAllTracks();
+                    if(playlistNow != null) {
+                        playlistNow.showAllTracks();
+                    } else {
+                        System.out.println("Плейлист не был выбран.");
+                    }
                     break;
                 case (11):
                     showAllPlaylists();
@@ -155,10 +159,16 @@ public class MP3Player {
                     }
                     break;
                 case (13):
+                    System.out.print("Введите имя или номер плейлиста: ");
+                    buf = in.nextLine();
                     try {
-                        savePlaylist();
-                    } catch (RuntimeException e){
-                        System.out.println(e.getMessage()+"\n");
+                        if (buf.matches("[-+]?\\d+")) {
+                            savePlaylist(Integer.parseInt(buf)-1);
+                        } else {
+                            savePlaylist(searchPlaylistName(buf));
+                        }
+                    } catch (RuntimeException e) {
+                        System.out.println("\n" + e.getMessage() + "\n");
                     }
                     break;
                 case (0):
@@ -200,7 +210,7 @@ public class MP3Player {
     static void showAllPlaylists() {
         if (!playlists.isEmpty()) {
             System.out.println("Список плейлистов: \n");
-            for (int i = 1; i < playlists.size(); i++) {
+            for (int i = 1; i <= playlists.size(); i++) {
                 System.out.println(i + " : " + playlists.get(i-1).getName());
             }
         } else {
@@ -210,9 +220,8 @@ public class MP3Player {
 
     static void loadPlaylist(String s) throws RuntimeException{
         String name = s + ".txt";
-        Path filePath = Path.of("C:\\Users\\User\\IdeaProjects\\Java4sem\\Playlists",name);
+        Path filePath = Path.of(".\\Playlists",name).toAbsolutePath().normalize();
         Playlist pl = new Playlist(s);
-        LinkedList<Track> arr = new LinkedList<>();
         BufferedReader rd;
         int len;
         try {
@@ -227,7 +236,7 @@ public class MP3Player {
         }
         for (int i = 0; i < len; i++) {
             try {
-                arr.add(new Track(rd.readLine()));
+                pl.addTrack(rd.readLine());
             } catch (IOException e) {
                 throw new RuntimeException("Не удалось считать название трека.");
             }
@@ -237,14 +246,15 @@ public class MP3Player {
         } catch (IOException e) {
             throw new RuntimeException("Не удалось закрыть буфер чтения.");
         }
-        pl.setListTrack(arr);
         playlists.add(pl);
+        System.out.println("Плейлист - " + s + " - успешно загружен.");
     }
 
-    static void savePlaylist() throws RuntimeException{
-        Path dirPath =  Path.of("C:\\Users\\User\\IdeaProjects\\Java4sem\\Playlists");
-        String name = playlistNow.getName()+".txt";
-        Path filePath = Path.of("C:\\Users\\User\\IdeaProjects\\Java4sem\\Playlists",name);
+    static void savePlaylist(int i) throws RuntimeException{
+        Path dirPath =  Path.of(".\\Playlists").toAbsolutePath().normalize();
+        Playlist playlistToSafe = playlists.get(i);
+        String name = playlistToSafe.getName()+".txt";
+        Path filePath = Path.of(".\\Playlists",name).toAbsolutePath().normalize();
         if (Files.notExists(dirPath)){
             try {
                 Files.createDirectory(dirPath);
@@ -252,8 +262,12 @@ public class MP3Player {
                 throw new RuntimeException("Не удалось создать директорию по указанному пути.");
             }
         }
-
-        LinkedList<Track> arr = playlistNow.getListTrack();
+        try{
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось удалить файл для перезаписи.");
+        }
+        LinkedList<Track> arr = playlistToSafe.getListTrack();
         BufferedWriter wr;
         try {
             wr = Files.newBufferedWriter(filePath, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
@@ -280,5 +294,6 @@ public class MP3Player {
         } catch (IOException e) {
             throw new RuntimeException("Не удалось закрыть буфер записи.");
         }
+        System.out.println("Плейлист успешно сохранён.");
     }
 }

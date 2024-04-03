@@ -1,7 +1,7 @@
 import java.util.LinkedList;
 
 public class Playlist {
-	private static LinkedList<Track> tracks;
+	private final LinkedList<Track> tracks;
 	private final String name;
 	private static Track trackNow;
 
@@ -11,7 +11,6 @@ public class Playlist {
 		trackNow = null;
 	}
 	LinkedList<Track> getListTrack(){ return tracks;}
-	void setListTrack(LinkedList<Track> tr){tracks = tr; }
 	Track getTrackNow() {
 		return trackNow;
 	}

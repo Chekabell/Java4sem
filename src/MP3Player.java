@@ -51,20 +51,10 @@ public class MP3Player {
             buf = in.nextLine();
             switch (key) {
                 case (1):
-                    if (!playlists.isEmpty()) {
-                        System.out.print("Введите имя или номер плейлиста: ");
-                        buf = in.nextLine();
-                        try {
-                            if (buf.matches("[-+]?\\d+")) {
-                                playlistNow = playlists.get(Integer.parseInt(buf)-1);
-                            } else {
-                                playlistNow = playlists.get(searchPlaylistName(buf));
-                            }
-                        } catch (IndexOutOfBoundsException e) {
-                            System.out.print("\nИзвините, но такого плейлиста ещё не существует\n");
-                        }
-                    } else {
-                        System.out.print("Плейлистов ещё нет! Добавьте хотя бы один!\n");
+                    try{
+                        choosePlaylist();
+                    } catch (RuntimeException e){
+                        System.out.println(e.getMessage());
                     }
                     break;
                 case (2):
@@ -178,7 +168,25 @@ public class MP3Player {
         }
     }
 
-    static int searchPlaylistName(String keyName) {
+    static void choosePlaylist() throws RuntimeException{
+        Scanner in = new Scanner(System.in);
+        if (!playlists.isEmpty()) {
+            System.out.print("Введите имя или номер плейлиста: ");
+            buf = in.nextLine();
+            try {
+                if (buf.matches("[-+]?\\d+")) {
+                    playlistNow = playlists.get(Integer.parseInt(buf)-1);
+                } else {
+                    playlistNow = playlists.get(searchPlaylistName(buf));
+                }
+            } catch (IndexOutOfBoundsException e) {
+                throw new RuntimeException("Not find this playlist!");
+            }
+        } else {
+            throw new RuntimeException("Playlist list is empty!\n");
+        }
+    }
+    private static int searchPlaylistName(String keyName) {
         int len = playlists.size();
         for (int i = 0; i < len; i++) {
             if (keyName.equals(playlists.get(i).getName())) {

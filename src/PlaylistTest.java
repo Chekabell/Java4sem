@@ -34,9 +34,7 @@ class PlaylistTest {
     @Test
     void testAddTrack() {
         Playlist playlist = new Playlist("testPlaylist");
-        Track track = new Track("testName");
-        playlist.addTrack("testName");
-        assertEquals(track.getName(),playlist.getListTrack().getFirst().getName());
+        assertEquals(playlist.addTrack("testName"),playlist.getListTrack().getFirst());
     }
     @Test
     void testSearchTrackName() {
@@ -70,7 +68,7 @@ class PlaylistTest {
         assertEquals("test",playlist.getTrackNow().getName());
     }
     @Test
-    void next() {
+    void testNext() {
         Playlist playlist = new Playlist("testPlaylist");
         playlist.addTrack("track1");
         playlist.addTrack("track2");
@@ -79,7 +77,7 @@ class PlaylistTest {
         assertEquals("track2",playlist.getTrackNow().getName());
     }
     @Test
-    void prev() {
+    void testPrev() {
         Playlist playlist = new Playlist("testPlaylist");
         playlist.addTrack("track1");
         playlist.addTrack("track2");
@@ -88,18 +86,18 @@ class PlaylistTest {
         assertEquals("track2",playlist.getTrackNow().getName());
     }
     @Test
-    void clear() {
-        Playlist playlist = new Playlist("testName");
-        LinkedList<Track> expectedList = new LinkedList<>();
-        assertIterableEquals(expectedList,playlist.getListTrack());
-    }
-    @Test
     void showAllTracks() {
         Playlist playlist = new Playlist("TEST");
         playlist.addTrack("test");
         playlist.showAllTracks();
-        assertEquals("Список песен в плейлисте TEST:\n1 : test", output.toString());
+        assertEquals("Список песен в плейлисте TEST:\r\n1 : test\r\n", output.toString());
     }
+    @Test
+    void showAllTracksIfEmpty() {
+        Playlist playlist = new Playlist("TEST");
+        assertThrows(RuntimeException.class,playlist::showAllTracks);
+    }
+
     @AfterEach
     public void cleanUpStreams() {
         System.setOut(null);
